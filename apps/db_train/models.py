@@ -3,6 +3,50 @@ from django.db import models
 
 from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+class Blog(models.Model):
+    """
+    Таблица Блог, содержащая в себе
+    name - название блога
+    tagline - используется для хранения краткого описания или слогана блога
+    """
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название")
+    tagline = models.TextField(verbose_name="Слоган")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Блог"
+        verbose_name_plural = "Блоги"
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50,
+                            verbose_name="Название",
+                            )
+
+    def __str__(self):
+        return f"Тег: {self.name}"
+
+class Entry(models.Model):
+    text = models.TextField(verbose_name="Текст статьи",
+                            )
+    author = models.ForeignKey("Author", on_delete=models.CASCADE, related_name='entries')
+    tags = models.ManyToManyField("Tag", related_name='entries')
+
+    def __str__(self):
+        return f"Автор: {self.author.username}; Текст: {self.text}; Теги: {self.tags}"
+
+class AuthorProfile(models.Model):
+    author = models.OneToOneField('Author', on_delete=models.CASCADE)
+    stage = models.IntegerField(default=0,
+                                blank=True,
+                                verbose_name="Стаж",
+                                help_text="Стаж в годах")
+
+    def __str__(self):
+        return f"Автор: {self.author.username}; Стаж: {self.stage} лет"
+
 class Author(models.Model):
     phone_regex = RegexValidator(
         regex=r'^\+79\d{9}$',
